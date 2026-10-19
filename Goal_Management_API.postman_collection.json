@@ -1,0 +1,1077 @@
+{
+	"info": {
+		"_postman_id": "goal-management-api-collection",
+		"name": "Goal Management API",
+		"description": "Coleção completa para teste dos endpoints do Backend da API de Gestão de Metas e Tarefas Kanban.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "goalId",
+			"value": ""
+		},
+		{
+			"key": "columnId",
+			"value": ""
+		},
+		{
+			"key": "taskId",
+			"value": ""
+		}
+	],
+	"item": [
+		{
+			"name": "1. Autenticação",
+			"item": [
+				{
+					"name": "Registrar Usuário (Salva Token Automático)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var data = pm.response.json();",
+									"    pm.collectionVariables.set(\"token\", data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Renan Rodrigues\",\n  \"email\": \"renan@example.com\",\n  \"password\": \"senha123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					}
+				},
+				{
+					"name": "Login de Usuário (Salva Token Automático)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var data = pm.response.json();",
+									"    pm.collectionVariables.set(\"token\", data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"renan@example.com\",\n  \"password\": \"senha123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Usuários",
+			"item": [
+				{
+					"name": "Obter Meu Perfil",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar Usuários (Paginado)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users?page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Metas",
+			"item": [
+				{
+					"name": "Criar Meta (Gera 4 Colunas e Salva goalId)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var data = pm.response.json();",
+									"    pm.collectionVariables.set(\"goalId\", data.id);",
+									"    if (data.columns && data.columns.length > 0) {",
+									"        pm.collectionVariables.set(\"columnId\", data.columns[0].id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Novo Checkout Transacional\",\n  \"description\": \"Redesenho completo do fluxo de pagamento para reduzir abandono de carrinho.\",\n  \"category\": \"Engenharia de Produto\",\n  \"priority\": \"HIGH\",\n  \"deadline\": \"2026-11-30\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/goals",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"goals"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar Minhas Metas (Paginado)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/goals?page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"goals"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Obter Detalhes da Meta por ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/goals/{{goalId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"goals",
+								"{{goalId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Atualizar Meta",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Novo Checkout Transacional v2\",\n  \"description\": \"Adicionado suporte a Pix e carteiras digitais.\",\n  \"category\": \"Engenharia de Produto\",\n  \"status\": \"IN_PROGRESS\",\n  \"priority\": \"HIGH\",\n  \"deadline\": \"2026-12-15\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/goals/{{goalId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"goals",
+								"{{goalId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar Membros da Meta",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/goals/{{goalId}}/members",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"goals",
+								"{{goalId}}",
+								"members"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Colunas Kanban",
+			"item": [
+				{
+					"name": "Listar Colunas da Meta",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/goals/{{goalId}}/columns",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"goals",
+								"{{goalId}}",
+								"columns"
+							]
+						}
+					}
+				},
+				{
+					"name": "Criar Nova Coluna / Quadro",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Homologação\",\n  \"color\": \"#8b5cf6\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/goals/{{goalId}}/columns",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"goals",
+								"{{goalId}}",
+								"columns"
+							]
+						}
+					}
+				},
+				{
+					"name": "Atualizar Coluna",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Em Revisão\",\n  \"color\": \"#ec4899\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/columns/{{columnId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"columns",
+								"{{columnId}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Tarefas",
+			"item": [
+				{
+					"name": "Criar Tarefa (Salva taskId)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var data = pm.response.json();",
+									"    pm.collectionVariables.set(\"taskId\", data.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"columnId\": \"{{columnId}}\",\n  \"title\": \"Integração com gateway de pagamentos\",\n  \"description\": \"Conexão com adquirente e split de pagamentos.\",\n  \"priority\": \"HIGH\",\n  \"deadline\": \"2026-11-20\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/goals/{{goalId}}/tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"goals",
+								"{{goalId}}",
+								"tasks"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar Tarefas da Meta",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/goals/{{goalId}}/tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"goals",
+								"{{goalId}}",
+								"tasks"
+							]
+						}
+					}
+				},
+				{
+					"name": "Atualizar Tarefa",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Integração com gateway e conciliação\",\n  \"description\": \"Conexão segura com Webhook e extrato bancário.\",\n  \"priority\": \"HIGH\",\n  \"deadline\": \"2026-11-25\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"{{taskId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Mover Tarefa de Coluna",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetColumnId\": \"{{columnId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks/{{taskId}}/move",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"{{taskId}}",
+								"move"
+							]
+						}
+					}
+				},
+				{
+					"name": "Alternar Conclusão da Tarefa (Toggle Complete)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks/{{taskId}}/toggle-complete",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"{{taskId}}",
+								"toggle-complete"
+							]
+						}
+					}
+				},
+				{
+					"name": "Deletar Tarefa",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"{{taskId}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Atividades",
+			"item": [
+				{
+					"name": "Listar Minhas Atividades Recentes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/activities?page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"activities"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar Atividades de uma Meta",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/activities/goals/{{goalId}}?page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"activities",
+								"goals",
+								"{{goalId}}"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Testes de Erros e Validações",
+			"item": [
+				{
+					"name": "422 - Validação: Cadastro com Campos Vazios e Inválidos",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"\",\n  \"email\": \"email_invalido_sem_arroba\",\n  \"password\": \"123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					}
+				},
+				{
+					"name": "422 - Validação: Criar Meta com Campos Obrigatórios Faltando",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"\",\n  \"category\": \"\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/goals",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"goals"
+							]
+						}
+					}
+				},
+				{
+					"name": "422 - Validação: Criar Tarefa Sem Título",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/goals/{{goalId}}/tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"goals",
+								"{{goalId}}",
+								"tasks"
+							]
+						}
+					}
+				},
+				{
+					"name": "400 - Regra de Negócio: Cadastro com E-mail Já Existente",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Renan Repetido\",\n  \"email\": \"renan@example.com\",\n  \"password\": \"senha123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					}
+				},
+				{
+					"name": "400 - Regra de Negócio: Login com Senha Incorreta",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"renan@example.com\",\n  \"password\": \"senhaErradaCompletamente123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "401 - Segurança: Acesso Sem Token JWT",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me"
+							]
+						}
+					}
+				},
+				{
+					"name": "403 - Segurança: Acessar Meta com Usuário Não Membro",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+									"var intruderEmail = 'maria.intruso@example.com';",
+									"var intruderPassword = 'senhaSegura123';",
+									"",
+									"pm.sendRequest({",
+									"    url: baseUrl + '/api/auth/login',",
+									"    method: 'POST',",
+									"    header: { 'Content-Type': 'application/json' },",
+									"    body: { mode: 'raw', raw: JSON.stringify({ email: intruderEmail, password: intruderPassword }) }",
+									"}, function (err, res) {",
+									"    if (res && res.code === 200) {",
+									"        pm.variables.set('intruderToken', res.json().token);",
+									"    } else {",
+									"        pm.sendRequest({",
+									"            url: baseUrl + '/api/auth/register',",
+									"            method: 'POST',",
+									"            header: { 'Content-Type': 'application/json' },",
+									"            body: { mode: 'raw', raw: JSON.stringify({ name: 'Maria Intruso', email: intruderEmail, password: intruderPassword }) }",
+									"        }, function (errReg, resReg) {",
+									"            if (resReg && resReg.code === 201) {",
+									"                pm.variables.set('intruderToken', resReg.json().token);",
+									"            }",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{intruderToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/goals/{{goalId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"goals",
+								"{{goalId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "404 - Recurso: Buscar Meta por UUID Inexistente",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/goals/00000000-0000-0000-0000-000000000000",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"goals",
+								"00000000-0000-0000-0000-000000000000"
+							]
+						}
+					}
+				},
+				{
+					"name": "404 - Recurso: Buscar Tarefa por UUID Inexistente",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks/00000000-0000-0000-0000-000000000000",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"00000000-0000-0000-0000-000000000000"
+							]
+						}
+					}
+				}
+			]
+		}
+	]
+}
