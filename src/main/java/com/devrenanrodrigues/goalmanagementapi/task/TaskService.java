@@ -90,7 +90,7 @@ public class TaskService {
                 goal,
                 savedTask,
                 ActivityActionType.TASK_CREATED,
-                "Criou a tarefa " + savedTask.getTitle(),
+                savedTask.getTitle(),
                 null,
                 column.getTitle()
         );
@@ -146,7 +146,7 @@ public class TaskService {
                 task.getGoal(),
                 updatedTask,
                 ActivityActionType.TASK_UPDATED,
-                "Atualizou a tarefa " + updatedTask.getTitle(),
+                updatedTask.getTitle(),
                 null,
                 null
         );
@@ -187,7 +187,7 @@ public class TaskService {
                 task.getGoal(),
                 saved,
                 ActivityActionType.TASK_MOVED,
-                "Moveu a tarefa " + saved.getTitle() + " de " + originColumnTitle + " para " + targetColumn.getTitle(),
+                saved.getTitle(),
                 originColumnTitle,
                 targetColumn.getTitle()
         );
@@ -222,7 +222,7 @@ public class TaskService {
                 task.getGoal(),
                 saved,
                 nextCompleted ? ActivityActionType.TASK_COMPLETED : ActivityActionType.TASK_UPDATED,
-                nextCompleted ? "Concluiu a tarefa " + saved.getTitle() : "Reabriu a tarefa " + saved.getTitle(),
+                saved.getTitle(),
                 null,
                 null
         );
@@ -246,7 +246,7 @@ public class TaskService {
                 goal,
                 null,
                 ActivityActionType.TASK_DELETED,
-                "Excluiu a tarefa " + task.getTitle(),
+                task.getTitle(),
                 null,
                 null
         );
