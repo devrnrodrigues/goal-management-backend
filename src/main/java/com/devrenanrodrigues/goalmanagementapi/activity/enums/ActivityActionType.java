@@ -7,5 +7,6 @@ public enum ActivityActionType {
     TASK_UPDATED,
     TASK_DELETED,
     GOAL_CREATED,
-    GOAL_UPDATED
+    GOAL_UPDATED,
+    COLUMN_REORDERED
 }

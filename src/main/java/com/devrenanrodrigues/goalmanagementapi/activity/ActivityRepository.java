@@ -16,7 +16,7 @@ public interface ActivityRepository extends JpaRepository<ActivityEntity, UUID> 
     Page<ActivityEntity> findByGoalId(@Param("goalId") UUID goalId, Pageable pageable);
 
     @Query("""
-        SELECT a FROM ActivityEntity a
+        SELECT DISTINCT a FROM ActivityEntity a
         JOIN GoalMemberEntity gm ON gm.goal.id = a.goal.id
         WHERE gm.user.id = :userId
         ORDER BY a.createdAt DESC
