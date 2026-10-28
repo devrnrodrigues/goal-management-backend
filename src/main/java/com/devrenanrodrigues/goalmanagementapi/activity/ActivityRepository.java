@@ -22,4 +22,7 @@ public interface ActivityRepository extends JpaRepository<ActivityEntity, UUID> 
         ORDER BY a.createdAt DESC
     """)
     Page<ActivityEntity> findRecentByUserId(@Param("userId") UUID userId, Pageable pageable);
+
+    @Query("SELECT a.createdAt FROM ActivityEntity a WHERE a.author.id = :userId ORDER BY a.createdAt DESC")
+    java.util.List<java.time.Instant> findActivityInstantsByUserId(@Param("userId") UUID userId);
 }
