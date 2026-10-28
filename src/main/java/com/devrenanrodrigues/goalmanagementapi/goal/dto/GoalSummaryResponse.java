@@ -7,6 +7,7 @@ import com.devrenanrodrigues.goalmanagementapi.goal.enums.GoalStatus;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public record GoalSummaryResponse(
@@ -20,9 +21,14 @@ public record GoalSummaryResponse(
     Integer progress,
     int memberCount,
     GoalRole userRole,
-    Instant createdAt
+    Instant createdAt,
+    List<GoalMemberResponse> members
 ) {
     public static GoalSummaryResponse of(GoalEntity entity, GoalRole userRole) {
+        List<GoalMemberResponse> memberList = entity.getMembers().stream()
+                .map(GoalMemberResponse::fromEntity)
+                .toList();
+
         return new GoalSummaryResponse(
                 entity.getId(),
                 entity.getTitle(),
@@ -34,7 +40,8 @@ public record GoalSummaryResponse(
                 entity.getProgress(),
                 entity.getMembers().size(),
                 userRole,
-                entity.getCreatedAt()
+                entity.getCreatedAt(),
+                memberList
         );
     }
 }

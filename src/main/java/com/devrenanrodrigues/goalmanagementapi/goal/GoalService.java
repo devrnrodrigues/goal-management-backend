@@ -70,7 +70,7 @@ public class GoalService {
                 savedGoal,
                 null,
                 ActivityActionType.GOAL_CREATED,
-                "Criou a meta " + savedGoal.getTitle(),
+                savedGoal.getTitle(),
                 null,
                 null
         );
@@ -117,7 +117,7 @@ public class GoalService {
                 updatedGoal,
                 null,
                 ActivityActionType.GOAL_UPDATED,
-                "Atualizou as informações da meta " + updatedGoal.getTitle(),
+                updatedGoal.getTitle(),
                 null,
                 null
         );
