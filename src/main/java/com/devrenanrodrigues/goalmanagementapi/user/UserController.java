@@ -25,8 +25,11 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<UserResponse>> listUsers(Pageable pageable) {
-        Page<UserResponse> response = userService.listUsers(pageable);
+    public ResponseEntity<Page<UserResponse>> listUsers(
+            @org.springframework.web.bind.annotation.RequestParam(name = "search", required = false) String search,
+            Pageable pageable
+    ) {
+        Page<UserResponse> response = userService.listUsers(search, pageable);
         return ResponseEntity.ok(response);
     }
 }
