@@ -2,6 +2,7 @@ package com.devrenanrodrigues.goalmanagementapi.board;
 
 import com.devrenanrodrigues.goalmanagementapi.board.dto.BoardColumnResponse;
 import com.devrenanrodrigues.goalmanagementapi.board.dto.CreateBoardColumnRequest;
+import com.devrenanrodrigues.goalmanagementapi.board.dto.ReorderColumnsRequest;
 import com.devrenanrodrigues.goalmanagementapi.board.dto.UpdateBoardColumnRequest;
 import com.devrenanrodrigues.goalmanagementapi.common.security.AuthenticatedUser;
 import jakarta.validation.Valid;
@@ -52,6 +53,16 @@ public class BoardColumnController {
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser
     ) {
         BoardColumnResponse response = boardColumnService.updateColumn(columnId, request, authenticatedUser.id());
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/api/goals/{goalId}/columns/reorder")
+    public ResponseEntity<List<BoardColumnResponse>> reorderColumns(
+            @PathVariable UUID goalId,
+            @Valid @RequestBody ReorderColumnsRequest request,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        List<BoardColumnResponse> response = boardColumnService.reorderColumns(goalId, request, authenticatedUser.id());
         return ResponseEntity.ok(response);
     }
 
