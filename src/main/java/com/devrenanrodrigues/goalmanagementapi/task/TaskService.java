@@ -168,7 +168,10 @@ public class TaskService {
             throw new BusinessException("Não é permitido mover tarefas para colunas de outras metas.");
         }
 
+        UUID originColumnId = task.getColumn().getId();
         String originColumnTitle = task.getColumn().getTitle();
+        boolean columnChanged = !originColumnId.equals(targetColumn.getId());
+
         task.setColumn(targetColumn);
 
         if (isDoneColumn(targetColumn)) {
@@ -182,15 +185,17 @@ public class TaskService {
         TaskEntity saved = taskRepository.save(task);
         updateGoalProgress(task.getGoal());
 
-        activityService.recordActivity(
-                member.getUser(),
-                task.getGoal(),
-                saved,
-                ActivityActionType.TASK_MOVED,
-                saved.getTitle(),
-                originColumnTitle,
-                targetColumn.getTitle()
-        );
+        if (columnChanged) {
+            activityService.recordActivity(
+                    member.getUser(),
+                    task.getGoal(),
+                    saved,
+                    ActivityActionType.TASK_MOVED,
+                    saved.getTitle(),
+                    originColumnTitle,
+                    targetColumn.getTitle()
+            );
+        }
 
         return TaskResponse.fromEntity(saved);
     }
