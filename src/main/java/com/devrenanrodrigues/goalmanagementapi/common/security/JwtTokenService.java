@@ -17,13 +17,13 @@ public class JwtTokenService {
     @Value("${security.jwt.secret}")
     private String secret;
 
-    @Value("${security.jwt.expiration-hours}")
-    private long expirationHours;
+    @Value("${security.jwt.expiration-minutes}")
+    private long expirationMinutes;
 
     public String generateToken(UUID userId, String email) {
         Algorithm algorithm = Algorithm.HMAC256(secret);
         Instant now = Instant.now();
-        Instant expiresAt = now.plus(expirationHours, ChronoUnit.HOURS);
+        Instant expiresAt = now.plus(expirationMinutes, ChronoUnit.MINUTES);
 
         return JWT.create()
                 .withIssuer("goal-management-backend")
