@@ -12,6 +12,9 @@ public record UserResponse(
     String email,
     String avatarUrl,
     AuthProvider provider,
+    String theme,
+    Boolean emailNotifications,
+    Boolean weeklySummary,
     Instant createdAt
 ) {
     public static UserResponse fromEntity(UserEntity entity) {
@@ -21,6 +24,9 @@ public record UserResponse(
                 entity.getEmail(),
                 entity.getAvatarUrl(),
                 entity.getProvider(),
+                entity.getTheme() != null ? entity.getTheme() : "LIGHT",
+                entity.getEmailNotifications() != null ? entity.getEmailNotifications() : true,
+                entity.getWeeklySummary() != null ? entity.getWeeklySummary() : true,
                 entity.getCreatedAt()
         );
     }

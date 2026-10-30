@@ -40,4 +40,16 @@ public class UserEntity extends BaseAuditableEntity {
 
     @Column(name = "provider_id", length = 100)
     private String providerId;
+
+    @Column(name = "theme", length = 20)
+    @Builder.Default
+    private String theme = "LIGHT";
+
+    @Column(name = "email_notifications")
+    @Builder.Default
+    private Boolean emailNotifications = true;
+
+    @Column(name = "weekly_summary")
+    @Builder.Default
+    private Boolean weeklySummary = true;
 }
