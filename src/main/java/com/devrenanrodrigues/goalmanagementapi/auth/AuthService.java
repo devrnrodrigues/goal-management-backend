@@ -129,7 +129,7 @@ public class AuthService {
             updated = true;
         }
 
-        if ((existingUser.getAvatarUrl() == null || existingUser.getAvatarUrl().isBlank()) && googleUser.picture() != null) {
+        if (googleUser.picture() != null && !googleUser.picture().isBlank() && !googleUser.picture().equals(existingUser.getAvatarUrl())) {
             existingUser.setAvatarUrl(googleUser.picture());
             updated = true;
         }
