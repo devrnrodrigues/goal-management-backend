@@ -33,11 +33,20 @@ public class BoardColumnService {
     private final TaskRepository taskRepository;
     private final ActivityService activityService;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<BoardColumnResponse> listColumnsByGoal(UUID goalId, UUID currentUserId) {
         goalSecurityValidator.validateAccess(goalId, currentUserId);
-        return boardColumnRepository.findByGoalIdOrderByPositionAsc(goalId)
-                .stream()
+        List<BoardColumnEntity> columns = boardColumnRepository.findByGoalIdOrderByPositionAsc(goalId);
+        if (columns.isEmpty()) {
+            GoalEntity goal = goalRepository.findById(goalId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Meta não encontrada."));
+            BoardColumnEntity colBacklog = BoardColumnEntity.builder().goal(goal).title("Backlog").color("#64748b").position(0).build();
+            BoardColumnEntity colTodo = BoardColumnEntity.builder().goal(goal).title("A Fazer").color("#3b82f6").position(1).build();
+            BoardColumnEntity colProgress = BoardColumnEntity.builder().goal(goal).title("Em progresso").color("#f59e0b").position(2).build();
+            BoardColumnEntity colDone = BoardColumnEntity.builder().goal(goal).title("Concluído").color("#10b981").position(3).build();
+            columns = boardColumnRepository.saveAll(List.of(colBacklog, colTodo, colProgress, colDone));
+        }
+        return columns.stream()
                 .map(BoardColumnResponse::fromEntity)
                 .toList();
     }
