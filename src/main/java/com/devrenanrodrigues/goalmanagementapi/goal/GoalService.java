@@ -3,6 +3,7 @@ package com.devrenanrodrigues.goalmanagementapi.goal;
 import com.devrenanrodrigues.goalmanagementapi.activity.ActivityService;
 import com.devrenanrodrigues.goalmanagementapi.activity.enums.ActivityActionType;
 import com.devrenanrodrigues.goalmanagementapi.board.BoardColumnEntity;
+import com.devrenanrodrigues.goalmanagementapi.common.exception.AccessForbiddenException;
 import com.devrenanrodrigues.goalmanagementapi.common.exception.BusinessException;
 import com.devrenanrodrigues.goalmanagementapi.common.exception.ResourceNotFoundException;
 import com.devrenanrodrigues.goalmanagementapi.goal.dto.AddGoalMemberRequest;
@@ -10,6 +11,7 @@ import com.devrenanrodrigues.goalmanagementapi.goal.dto.CreateGoalRequest;
 import com.devrenanrodrigues.goalmanagementapi.goal.dto.GoalMemberResponse;
 import com.devrenanrodrigues.goalmanagementapi.goal.dto.GoalResponse;
 import com.devrenanrodrigues.goalmanagementapi.goal.dto.GoalSummaryResponse;
+import com.devrenanrodrigues.goalmanagementapi.goal.dto.UpdateGoalMemberRoleRequest;
 import com.devrenanrodrigues.goalmanagementapi.goal.dto.UpdateGoalRequest;
 import com.devrenanrodrigues.goalmanagementapi.goal.enums.GoalRole;
 import com.devrenanrodrigues.goalmanagementapi.goal.enums.GoalStatus;
@@ -139,6 +141,10 @@ public class GoalService {
                 .orElseThrow(() -> new ResourceNotFoundException("Meta não encontrada."));
         goalSecurityValidator.validateAdminOrOwner(goalId, currentUserId);
 
+        if (request.role() == GoalRole.OWNER) {
+            throw new BusinessException("Não é permitido adicionar um novo membro diretamente como proprietário.");
+        }
+
         if (goalMemberRepository.existsByGoalIdAndUserId(goalId, request.userId())) {
             throw new BusinessException("Este usuário já é membro desta meta.");
         }
@@ -184,5 +190,44 @@ public class GoalService {
         }
 
         goalMemberRepository.deleteByGoalIdAndUserId(goalId, targetUserId);
+    }
+
+    @Transactional
+    public GoalMemberResponse updateMemberRole(UUID goalId, UUID targetUserId, UpdateGoalMemberRoleRequest request, UUID currentUserId) {
+        if (!goalRepository.existsById(goalId)) {
+            throw new ResourceNotFoundException("Meta não encontrada.");
+        }
+
+        GoalMemberEntity currentMember = goalSecurityValidator.validateAdminOrOwner(goalId, currentUserId);
+
+        GoalMemberEntity targetMember = goalMemberRepository.findByGoalIdAndUserId(goalId, targetUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("O vínculo do membro não foi encontrado nesta meta."));
+
+        if (targetMember.getRole() == request.role()) {
+            return GoalMemberResponse.fromEntity(targetMember);
+        }
+
+        if (request.role() == GoalRole.OWNER) {
+            if (currentMember.getRole() != GoalRole.OWNER) {
+                throw new AccessForbiddenException("Apenas o proprietário atual pode transferir a titularidade da meta.");
+            }
+            currentMember.setRole(GoalRole.ADMIN);
+            goalMemberRepository.save(currentMember);
+            targetMember.setRole(GoalRole.OWNER);
+            GoalMemberEntity savedTarget = goalMemberRepository.save(targetMember);
+            return GoalMemberResponse.fromEntity(savedTarget);
+        }
+
+        if (targetMember.getRole() == GoalRole.OWNER) {
+            throw new BusinessException("A meta não pode ficar sem um proprietário. Transfira a titularidade para outro membro antes de alterar este papel.");
+        }
+
+        if (currentMember.getRole() != GoalRole.OWNER && targetMember.getRole() == GoalRole.ADMIN) {
+            throw new AccessForbiddenException("Apenas o proprietário pode alterar o papel de um administrador.");
+        }
+
+        targetMember.setRole(request.role());
+        GoalMemberEntity savedMember = goalMemberRepository.save(targetMember);
+        return GoalMemberResponse.fromEntity(savedMember);
     }
 }

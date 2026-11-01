@@ -6,6 +6,7 @@ import com.devrenanrodrigues.goalmanagementapi.goal.dto.CreateGoalRequest;
 import com.devrenanrodrigues.goalmanagementapi.goal.dto.GoalMemberResponse;
 import com.devrenanrodrigues.goalmanagementapi.goal.dto.GoalResponse;
 import com.devrenanrodrigues.goalmanagementapi.goal.dto.GoalSummaryResponse;
+import com.devrenanrodrigues.goalmanagementapi.goal.dto.UpdateGoalMemberRoleRequest;
 import com.devrenanrodrigues.goalmanagementapi.goal.dto.UpdateGoalRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -106,5 +108,16 @@ public class GoalController {
     ) {
         goalService.removeMember(id, userId, authenticatedUser.id());
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/members/{userId}")
+    public ResponseEntity<GoalMemberResponse> updateMemberRole(
+            @PathVariable UUID id,
+            @PathVariable UUID userId,
+            @Valid @RequestBody UpdateGoalMemberRoleRequest request,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        GoalMemberResponse response = goalService.updateMemberRole(id, userId, request, authenticatedUser.id());
+        return ResponseEntity.ok(response);
     }
 }
