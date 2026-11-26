@@ -34,6 +34,8 @@ API RESTful robusta desenvolvida em Java 21 e Spring Boot 4 para gerenciamento e
 | **PostgreSQL** | Sistema gerenciador de banco de dados relacional voltado à consistência ACID |
 | **Flyway Migration** | Controle e automação de versionamento evolutivo do esquema do banco de dados |
 | **Jakarta Bean Validation** | Validação sintática e declarativa de contratos de entrada nos DTOs |
+| **Spring Boot Actuator** | Observabilidade corporativa com métricas de JVM e health check em porta dedicada (8081) |
+| **JUnit 5 / Mockito / AssertJ** | Suíte de testes automatizados com testes unitários puros e slices web desacoplados |
 | **Lombok** | Produtividade no código eliminando boilerplate (getters, setters, builders, construtores) |
 | **Maven** | Gerenciador de dependências, ciclo de compilação e empacotamento da aplicação |
 
@@ -334,14 +336,66 @@ As configurações sensíveis e dinâmicas da aplicação são carregadas via va
 
 ---
 
-## Testes
+## Testes Automatizados
 
-> [!NOTE]
-> **Status: Planejamento**  
-> A suíte automatizada de testes encontra-se em fase de planejamento arquitetural (com teste base de carregamento de contexto Spring Boot implementado). O escopo futuro contemplará:
-> - **Testes Unitários**: Regras de negócio e use cases isolados nos Services utilizando JUnit 5 e Mockito.
-> - **Testes de Integração**: Validação de fluxos de ponta a ponta dos Controllers via `MockMvc` com segurança simulada.
-> - **Testes de Persistência**: Verificação de queries customizadas e constraints relacionais via `@DataJpaTest` com banco de dados em container.
+O projeto conta com uma suíte abrangente de testes automatizados com execução ultra rápida (execução completa em cerca de 10 segundos), estruturada estritamente sob o padrão **Package by Feature** em `src/test/java/...`:
+
+### 1. Camadas e Abordagem de Testes
+- **Testes Unitários de Serviços (Regras de Negócio)**:
+  - Execução isolada com **JUnit 5 + Mockito** (`@ExtendWith(MockitoExtension.class)`), sem inicialização do contexto Spring.
+  - Dependências de persistência e serviços auxiliares são 100% simulados (`@Mock` e `@InjectMocks`).
+  - Cobertura completa de fluxos de sucesso, cenários de exceção (`ResourceNotFoundException`, `BusinessException`, `AccessForbiddenException`, `UnauthorizedException`) e validações de integridade.
+- **Testes de Controllers (Web Slices Desacoplados)**:
+  - Testes isolados da camada web com `@WebMvcTest` e `MockMvc`.
+  - Desacoplamento da infraestrutura de segurança com mocks dedicados e injeção do usuário autenticado no contexto de teste.
+  - Validação estrita de contratos de entrada (`@Valid` do Jakarta Bean Validation com retorno `422 Unprocessable Entity`), roteamento e serialização/desserialização JSON.
+
+### 2. Cobertura Atual por Feature
+
+| Feature | Arquivos de Teste | Quantidade de Cenários | Principais Casos Testados |
+| --- | --- | :---: | --- |
+| **`auth`** | `AuthServiceTest`<br>`AuthControllerTest` | 21 testes | Registro, login tradicional, login Google OAuth, refresh token com rotação e detecção de revogação/expiração, logout |
+| **`user`** | `UserServiceTest`<br>`UserControllerTest` | 16 testes | Consulta de perfil, paginação, atualização cadastral, bloqueio e validação de troca de senha (local vs Google) |
+| **`goal`** | `GoalSecurityValidatorTest`<br>`GoalServiceTest`<br>`GoalControllerTest` | 31 testes | Criação de metas com colunas padrão, controle de acesso RBAC/ACL (OWNER/ADMIN/VIEWER), transferência de titularidade, auditoria |
+| **`task`** | `TaskServiceTest`<br>`TaskControllerTest` | 15 testes | Criação em colunas padrão ou específicas, movimentação entre colunas, alternância de conclusão, recálculo de progresso da meta |
+
+### 3. Como Executar os Testes
+
+```bash
+# Executar todos os testes do projeto via wrapper
+./mvnw test
+
+# Em ambientes Windows PowerShell
+.\mvnw.cmd test
+
+# Executar apenas uma feature ou classe específica
+.\mvnw.cmd test -Dtest="Goal*Test"
+.\mvnw.cmd test -Dtest="AuthServiceTest"
+```
+
+---
+
+## Observabilidade & Monitoramento
+
+A aplicação dispõe de recursos nativos para monitoramento operacional, métricas de saúde e logging estruturado:
+
+### 1. Spring Boot Actuator (Porta Dedicada `8081`)
+Para isolar o tráfego operacional da aplicação do tráfego administrativo, o Actuator opera em porta separada (`8081`):
+
+| Endpoint | Método | Descrição |
+| --- | :---: | --- |
+| `http://localhost:8081/actuator/health` | `GET` | Indicador detalhado de saúde da aplicação e integridade da conexão com PostgreSQL |
+| `http://localhost:8081/actuator/metrics` | `GET` | Métricas operacionais em tempo real (JVM, threads, GC, memória, conexões HikariCP) |
+| `http://localhost:8081/actuator/info` | `GET` | Metadados e versão da aplicação |
+| `http://localhost:8081/actuator/env` | `GET` | Inspeção de variáveis de ambiente e propriedades de configuração |
+
+### 2. Logging Estruturado e Rotação de Arquivos (`logback-spring.xml`)
+A aplicação utiliza configuração avançada de logs com múltiplos appenders e políticas de rotação:
+
+- **Console Appender**: Saída colorizada e formatada com timestamps milissegundos para facilitar a depuração em ambiente de desenvolvimento.
+- **Log Geral (`logs/application.log`)**: Registro de todos os eventos em nível `INFO` ou superior, com rotação diária ou ao atingir 10MB por arquivo (retenção de 30 dias e limite de 1GB).
+- **Log de Erros Dedicado (`logs/error.log`)**: Filtro exclusivo para erros (`ThresholdFilter: ERROR`), permitindo análise rápida de incidentes e falhas operacionais (retenção de 30 dias e limite de 500MB).
+- **Rastreabilidade de Exceções**: O `GlobalExceptionHandler` contextualiza todos os erros com método HTTP, URI e variáveis de rota, garantindo diagnóstico preciso.
 
 ---
 
